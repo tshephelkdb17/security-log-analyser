@@ -14,6 +14,8 @@ This educational cybersecurity project demonstrates log parsing, time-based dete
 - Count successful and failed logins.
 - Detect repeated failures within a rolling time window.
 - Identify successful logins following repeated failures for the same account.
+- Process events chronologically, even when the input is unordered.
+- Keep failure counts separate for different servers and source IPs.
 - Count unsupported or invalid non-empty log lines.
 - Export alerts to CSV.
 - Generate a Markdown investigation report with an alert summary and review checklist.
@@ -21,7 +23,7 @@ This educational cybersecurity project demonstrates log parsing, time-based dete
 - Prefix certain formula-leading text characters in CSV exports.
 - Choose input files, detection thresholds, time windows, and output folders through command-line options.
 - Reject invalid command-line values and protect the input from report files at the same resolved path.
-- Include synthetic sample logs and 24 automated tests.
+- Include synthetic sample logs and 28 automated tests.
 - Run the test suite automatically through GitHub Actions on pushes and pull requests.
 
 ## Detection Rules
@@ -33,7 +35,9 @@ The default threshold is five failures within five minutes.
 | `REPEATED_FAILURES` | Generated when the rolling failure count reaches the threshold for the same server and source IP. Failures may involve different usernames. |
 | `SUCCESS_AFTER_FAILURES` | Generated when a successful login follows at least the threshold number of failures for the same server, source IP, and username within the configured time window. Failures labelled “invalid user” are excluded from this account-specific check. |
 
-Events are sorted by timestamp before analysis. Events exactly at the time-window boundary are included.
+Events are sorted by timestamp before analysis.
+
+Events exactly at the time-window boundary are included. For example, with a five-minute window, a failure exactly 300 seconds before the current event still counts; one 301 seconds earlier does not.
 
 For repeated-failure alerts, the reported username belongs to the event that triggered the alert. It does not necessarily represent every account included in the failure count.
 
@@ -48,7 +52,7 @@ Alerts are investigation leads, not proof of a compromised account.
 | `src/analyser.py` | Parser, detection logic, terminal output, and CSV exporter |
 | `src/reporting.py` | Markdown report generation and text escaping |
 | `src/cli.py` | Command-line interface for input files, detection settings, and output folders |
-| `tests/test_analyser.py` | Ten parser and detection tests |
+| `tests/test_analyser.py` | Fourteen parser and detection tests |
 | `tests/test_reporting.py` | Six CSV and Markdown export tests |
 | `tests/test_cli.py` | Eight command-line integration tests |
 | `data/sample_auth.log` | Fictional SSH authentication events |
@@ -221,11 +225,18 @@ From the project root:
 python3 -m unittest discover -s tests -v
 ```
 
-The current suite contains 24 tests.
+The current suite contains 28 tests.
+
+| Test group | Count |
+|---|---:|
+| Parser and detection | 14 |
+| CSV and Markdown reporting | 6 |
+| Command-line interface | 8 |
+| Total | 28 |
 
 ### Parser and Detection Tests
 
-Ten tests cover:
+Fourteen tests cover:
 
 - Parsing a valid login.
 - Recognising an invalid-user entry.
@@ -237,6 +248,10 @@ Ten tests cover:
 - Excluding expired failures.
 - Keeping different source IPs separate.
 - Avoiding a success-after-failures alert for a different username.
+- Including failures exactly at the five-minute boundary.
+- Excluding failures just outside the five-minute window.
+- Keeping different servers separate.
+- Processing out-of-order events correctly.
 
 ### Reporting Tests
 
@@ -319,7 +334,6 @@ A successful login after repeated failures warrants investigation, but legitimat
 
 ## Planned Improvements
 
-- Additional time-boundary, host-separation, and out-of-order event tests.
 - Include the input filename and configured detection thresholds in reports.
 - Expand automated testing across additional Python versions and operating systems.
 
