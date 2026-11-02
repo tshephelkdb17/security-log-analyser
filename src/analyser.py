@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 from ipaddress import ip_address
 from pathlib import Path
 
+if __package__:
+    from .reporting import export_markdown_report
+else:
+    from reporting import export_markdown_report
 
 LOG_PATTERN = re.compile(
     r"^(?P<timestamp>\S+) "
@@ -206,8 +210,15 @@ def main():
             project_folder / "reports" / "alerts.csv",
         )
         print(f"\nCSV report saved to: {report_file}")
+        markdown_file = export_markdown_report(
+            events,
+            alerts,
+            skipped,
+            project_folder / "reports" / "investigation_report.md",
+        )
+        print(f"Markdown report saved to: {markdown_file}")
     except OSError as error:
-        print(f"\nCould not save the CSV report: {error}")
+        print(f"\nCould not save a report: {error}")
 
 
 if __name__ == "__main__":
