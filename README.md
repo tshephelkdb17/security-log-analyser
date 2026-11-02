@@ -1,5 +1,7 @@
 # Security Log Analyser
 
+[![Python Tests](https://github.com/tshephelkdb17/security-log-analyser/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/tshephelkdb17/security-log-analyser/actions/workflows/test.yml)
+
 A Python tool that analyses SSH authentication logs, identifies suspicious login patterns, and exports alerts to CSV and a readable Markdown investigation report.
 
 This educational cybersecurity project demonstrates log parsing, time-based detection, input validation, command-line interfaces, automated testing, and reporting using Python’s standard library.
@@ -20,6 +22,7 @@ This educational cybersecurity project demonstrates log parsing, time-based dete
 - Choose input files, detection thresholds, time windows, and output folders through command-line options.
 - Reject invalid command-line values and protect the input from report files at the same resolved path.
 - Include synthetic sample logs and 24 automated tests.
+- Run the test suite automatically through GitHub Actions on pushes and pull requests.
 
 ## Detection Rules
 
@@ -51,11 +54,14 @@ Alerts are investigation leads, not proof of a compromised account.
 | `data/sample_auth.log` | Fictional SSH authentication events |
 | `reports/alerts.csv` | Generated sample alerts |
 | `reports/investigation_report.md` | Generated investigation report |
+| `.github/workflows/test.yml` | GitHub Actions workflow for automated testing |
 | `.gitignore` | Excludes the virtual environment and temporary files |
 
 ## Setup
 
-Python 3 is required. No third-party Python packages are needed.
+Python 3 is required. The automated workflow runs on Python 3.14.
+
+No third-party Python packages are needed.
 
 Clone the repository:
 
@@ -260,6 +266,28 @@ The command-line tests launch the actual CLI as a subprocess.
 
 Reporting tests and command-line tests that generate reports use temporary directories, so they do not overwrite the sample reports.
 
+## Automated Testing with GitHub Actions
+
+The [Python Tests workflow](.github/workflows/test.yml) runs the test suite:
+
+- On pushes to the repository.
+- On pull requests.
+- When started manually through GitHub Actions.
+
+The workflow uses an Ubuntu runner and Python 3.14. It checks out the repository and runs:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+No third-party dependencies need to be installed.
+
+View workflow runs and test logs on the [Actions page](https://github.com/tshephelkdb17/security-log-analyser/actions).
+
+The badge at the top of this README displays the workflow status for the `main` branch.
+
+Passing tests confirm the behaviours covered by the test suite. They do not guarantee that the analyser detects every attack or contains no defects.
+
 ## Investigation Approach
 
 When reviewing an alert:
@@ -292,8 +320,8 @@ A successful login after repeated failures warrants investigation, but legitimat
 ## Planned Improvements
 
 - Additional time-boundary, host-separation, and out-of-order event tests.
-- Automated test execution through GitHub Actions.
 - Include the input filename and configured detection thresholds in reports.
+- Expand automated testing across additional Python versions and operating systems.
 
 ## Sample Data
 
